@@ -100,6 +100,12 @@ html,body{margin:0;background:transparent}
 .x{position:absolute;right:7px;top:8px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;color:var(--mut);background:rgba(0,0,0,.25)}
 .x:hover{color:var(--fg)}
 .x .ico{width:13px;height:13px;stroke-width:2.6}
+.pkb{position:absolute;right:7px;top:7px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:rgba(20,16,14,.5);box-shadow:inset 0 0 0 1.8px rgba(255,255,255,.7);color:transparent;z-index:1}
+.pkb .ico{width:14px;height:14px;stroke-width:3}
+.t.pk img.in{opacity:.5}
+.t.pk.on img.in{opacity:1}
+.t.pk.on{outline:2.5px solid var(--e2);outline-offset:-2.5px}
+.t.pk.on .pkb{background:linear-gradient(180deg,var(--e1),var(--e2));box-shadow:none;color:#1a0d05}
 .t.up{display:grid;place-items:center}
 .t.up img{opacity:.45;position:absolute;inset:0}
 .spin{width:22px;height:22px;border-radius:50%;border:2.5px solid rgba(255,255,255,.25);border-top-color:#fff;animation:spin .8s linear infinite;position:relative}

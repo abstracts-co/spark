@@ -105,6 +105,12 @@ html,body{margin:0;background:transparent}
 .x{position:absolute;right:7px;top:8px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;color:var(--mut);background:rgba(0,0,0,.25)}
 .x:hover{color:var(--fg)}
 .x .ico{width:13px;height:13px;stroke-width:2.6}
+.pkb{position:absolute;right:7px;top:7px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:rgba(20,16,14,.5);box-shadow:inset 0 0 0 1.8px rgba(255,255,255,.7);color:transparent;z-index:1}
+.pkb .ico{width:14px;height:14px;stroke-width:3}
+.t.pk img.in{opacity:.5}
+.t.pk.on img.in{opacity:1}
+.t.pk.on{outline:2.5px solid var(--e2);outline-offset:-2.5px}
+.t.pk.on .pkb{background:linear-gradient(180deg,var(--e1),var(--e2));box-shadow:none;color:#1a0d05}
 .t.up{display:grid;place-items:center}
 .t.up img{opacity:.45;position:absolute;inset:0}
 .spin{width:22px;height:22px;border-radius:50%;border:2.5px solid rgba(255,255,255,.25);border-top-color:#fff;animation:spin .8s linear infinite;position:relative}
@@ -216,8 +222,7 @@ html[data-still] .sp *{animation:none!important;transition:none!important}
     <section class="card" id="sparks" hidden></section>
   </div>
 </div>
-<script type="module">const VIEWER = "<!doctype html>\n<html lang=\"en\">\n<meta charset=\"utf-8\">\n<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n<title>Spark<\/title>\n<link rel=\"stylesheet\" href=\"https://fonts.googleapis.com/css2?family=Figtree:wght@400..800&display=swap\">\n<style>\nhtml,body{margin:0;background:transparent}\n.v{max-width:760px;margin:0 auto;--fg:#f5f2ee;--mut:#9a938b;--well:rgba(255,255,255,.065);--well2:rgba(255,255,255,.12);--e1:#ffc56b;--e2:#ff7a3c;--adv:#ff8a4c;--bkt:#f5c451;--con:#5fd4a6;--out:cubic-bezier(.23,1,.32,1);\n  background:#0c0a09;color:var(--fg);padding:14px;border-radius:22px;font-family:Figtree,ui-sans-serif,system-ui,-apple-system,\"Segoe UI\",sans-serif;font-size:15px;line-height:1.35;-webkit-font-smoothing:antialiased}\n.v *{box-sizing:border-box;margin:0}\n.v button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;text-align:inherit;transition:transform .16s var(--out)}\n.v button:active{transform:scale(.96)}\n.v svg,.v img,.v video{display:block}\n.ico{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}\n.h{display:flex;align-items:center;gap:8px;margin:0 2px 12px;font-weight:800;font-size:18px;letter-spacing:-.02em}\n.h svg{width:20px;height:20px}\n.h span{margin-left:auto;font-size:13px;font-weight:600;color:var(--mut);font-variant-numeric:tabular-nums}\n.mw{container-type:inline-size}\n.mo{display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:calc((100cqw - 12px)/3);gap:6px;grid-auto-flow:dense}\n.t{position:relative;border-radius:12px;overflow:hidden;background:#1a1614;width:100%;height:100%;display:block}\n.t img{width:100%;height:100%;object-fit:cover}\n.t.big{grid-column:span 2;grid-row:span 2;border-radius:16px}\n.t.wide{grid-column:span 2}\n.t.tall{grid-row:span 2}\n.t.full{grid-column:span 3}\n.cap{position:absolute;left:6px;bottom:6px;padding:2px 8px;border-radius:999px;background:rgba(20,16,14,.6);font-size:11.5px;font-weight:650}\n.play{position:absolute;left:50%;top:50%;width:40px;height:40px;margin:-20px;border-radius:50%;background:rgba(20,16,14,.5);display:grid;place-items:center;pointer-events:none}\n.play svg{width:14px;height:14px;fill:#fff;margin-left:2px}\n.note{margin-top:6px;border-radius:12px;background:linear-gradient(160deg,#2a1c14,#1c1410);padding:11px 14px;font-weight:500;color:#ffe9d6;white-space:pre-wrap;overflow-wrap:anywhere;box-shadow:inset 0 0 0 1px rgba(255,160,90,.14)}\n.stage{position:relative;border-radius:16px;overflow:hidden;background:#000;aspect-ratio:var(--ar,1);max-height:min(125cqw,720px);display:grid;place-items:center}\n.stage img,.stage video{width:100%;height:100%;object-fit:contain}\n.stage button{position:absolute;right:10px;top:10px;width:36px;height:36px;border-radius:50%;background:rgba(20,16,14,.6);display:grid;place-items:center}\n.sparks{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}\n.sparks button{display:flex;align-items:center;gap:7px;padding:6px 8px 6px 12px;border-radius:999px;background:var(--well);font-size:13.5px;font-weight:550;overflow-wrap:anywhere}\n.sparks i{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--well2);color:var(--k);flex:none}\n.adv{--k:var(--adv)}.bkt{--k:var(--bkt)}.con{--k:var(--con)}\n<\/style>\n<body>\n<div class=\"v\" id=\"v\"><\/div>\n<script type=\"module\">\nconst esc = (s) => String(s).replace(/[&<>\"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '\"': '&quot;', \"'\": '&#39;' })[c]);\nconst safe = (name) => (typeof name === 'string' && /^[0-9]{1,3}\\.(jpg|mp4|webm)$/.test(name) ? name : null);\nconst KINDS = ['adv', 'bkt', 'con'];\nconst SHAPES = { 1: ['full'], 2: ['big', 'tall'], 3: ['big', '', ''], 4: ['big', 'tall', 'wide', ''], 5: ['big', '', '', 'wide', ''] };\nconst shapesFor = (n) => SHAPES[n] ?? Array.from({ length: n }, (_, i) => (i === 0 ? 'big' : i === n - 1 ? ['', 'full', 'wide'][(n - 3) % 3] : ''));\nconst PLUS = '<svg class=\"ico\" viewBox=\"0 0 24 24\"><path d=\"M12 5v14M5 12h14\"/><\/svg>';\nconst X = '<svg class=\"ico\" viewBox=\"0 0 24 24\"><path d=\"M6 6l12 12M18 6L6 18\"/><\/svg>';\nconst LOGO = '<svg viewBox=\"0 0 24 24\"><defs><linearGradient id=\"eg\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#ffc56b\"/><stop offset=\".6\" stop-color=\"#ff7a3c\"/><stop offset=\"1\" stop-color=\"#e8431f\"/><\/linearGradient><\/defs><path fill=\"url(#eg)\" d=\"M12 1c.7 5.6 2.9 8.8 10 11-7.1 2.2-9.3 5.4-10 11-.7-5.6-2.9-8.800-10-11C9.1 9.8 11.3 6.6 12 1z\"/><\/svg>';\nconst v = document.getElementById('v');\nconst data = await fetch('month.json').then((r) => r.json()).catch(() => null);\nconst items = (Array.isArray(data?.items) ? data.items : []).filter((it) => it && (it.k === 'note' ? typeof it.text === 'string' : safe(it.f)));\nconst sparks = (Array.isArray(data?.sparks) ? data.sparks : []).filter((s) => s && typeof s.t === 'string').slice(0, 12);\nlet open = -1;\nconst render = () => {\n  const it = items[open];\n  const shapes = shapesFor(items.filter((x) => x.k !== 'note').length);\n  let n = 0;\n  const body = it\n    ? `<div class=\"stage\" style=\"--ar:${it.w && it.h ? `${+it.w}/${+it.h}` : '1'}\">${it.k === 'video' && safe(it.v) ? `<video src=\"${safe(it.v)}\" poster=\"${safe(it.f)}\" controls playsinline autoplay><\/video>` : `<img src=\"${safe(it.f)}\" alt=\"\">`}<button data-close aria-label=\"Close\">${X}<\/button><\/div>`\n    : `<div class=\"mo\">${items.map((x, i) => (x.k === 'note'\n      ? ''\n      : `<button class=\"t ${shapes[n++] ?? ''}\" data-open=\"${i}\" aria-label=\"Open\"><img src=\"${safe(x.f)}\" alt=\"\" loading=\"lazy\">${x.k === 'video' && safe(x.v) ? '<span class=\"play\"><svg viewBox=\"0 0 16 16\"><path d=\"M3 1.500v13l11-6.500z\"/><\/svg><\/span>' : ''}${typeof x.cap === 'string' ? `<span class=\"cap\">${esc(x.cap.slice(0, 20))}<\/span>` : ''}<\/button>`)).join('')}<\/div>`;\n  const notes = items.filter((x) => x.k === 'note').map((x) => `<p class=\"note\">${esc(x.text.slice(0, 400))}<\/p>`).join('');\n  v.innerHTML = `<div class=\"h\">${LOGO}spark<span>${esc(String(data?.tag ?? '').slice(0, 60))}<\/span><\/div><div class=\"mw\">${body}<\/div>${notes}\n    ${sparks.length ? `<div class=\"sparks\">${sparks.map((s, i) => `<button class=\"${KINDS.includes(s.k) ? s.k : 'bkt'}\" data-spark=\"${i}\">${esc(s.t.slice(0, 120))}<i>${PLUS}<\/i><\/button>`).join('')}<\/div>` : ''}`;\n};\nv.addEventListener('click', (e) => {\n  const t = e.target.closest('button');\n  if (!t) return;\n  if ('open' in t.dataset) open = +t.dataset.open;\n  else if ('close' in t.dataset) open = -1;\n  else if ('spark' in t.dataset) {\n    const s = sparks[+t.dataset.spark];\n    parent.postMessage({ abstracts: 'call', id: 'open', method: 'open', params: { path: `/a/spark?a_spark=${encodeURIComponent(`${KINDS.includes(s.k) ? s.k : 'bkt'}:${s.t.slice(0, 120)}`)}` } }, '*');\n    return;\n  }\n  render();\n});\nrender();\nconst postHeight = () => parent.postMessage({ abstractsHeight: Math.ceil(document.body.getBoundingClientRect().height) }, '*');\nnew ResizeObserver(postHeight).observe(document.body);\npostHeight();\n<\/script>\n<\/body>\n<\/html>\n";
-const MN = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+<script type="module">const MN = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const MS = MN.map((m) => m.slice(0, 3));
 const TOTAL = 960;
 const KINDS = ['adv', 'bkt', 'con'];
@@ -303,7 +308,7 @@ const hello = await (async () => {
 
 const S = {
   live: false, who: null, born: null, sparks: [], index: {}, ideas: [], aiSeen: false,
-  docs: new Map(), loading: new Set(), urls: new Map(), sel: NOWA, open: null, up: [], kind: 'adv', pop: false, busy: false,
+  docs: new Map(), loading: new Set(), urls: new Map(), sel: NOWA, open: null, pick: null, up: [], kind: 'adv', pop: false, busy: false,
   pending: hello.launch?.spark ?? null,
 };
 
@@ -320,12 +325,14 @@ const toast = (text) => {
   clearTimeout(toast.timer);
   toast.timer = setTimeout(() => host.replaceChildren(), 4500);
 };
-const WORDS = { signed_out: 'Sign in on Abstracts first.', rate_limited: 'Too many requests. Wait a minute.', needs_github: 'Sharing needs GitHub connected in Settings.', unsupported: 'This page can’t do that yet. Reload it.' };
+const WORDS = { signed_out: 'Sign in on Abstracts first.', rate_limited: 'Too many requests. Wait a minute.', unsupported: 'This page can’t do that yet. Reload it.' };
 const say = (e, where) => { if (e?.code !== 'cancelled' && e?.code !== 'denied') toast(WORDS[e?.code] ?? e?.message ?? 'Something went wrong.', where); };
 
 const chains = new Map();
+let writing = 0;
 const queue = (key, work) => {
-  const next = (chains.get(key) ?? Promise.resolve()).catch(() => {}).then(work);
+  writing++;
+  const next = (chains.get(key) ?? Promise.resolve()).catch(() => {}).then(work).finally(() => { writing--; });
   chains.set(key, next);
   return next.catch((e) => { say(e); throw e; });
 };
@@ -460,6 +467,7 @@ const select = (a) => {
   grid.children[idxOf(S.sel)]?.classList.remove('sel');
   S.sel = a;
   S.open = null;
+  S.pick = null;
   grid.children[idxOf(a)]?.classList.add('sel');
   renderMonth();
   renderAdd();
@@ -512,7 +520,8 @@ const SHAPES = { 1: ['full'], 2: ['big', 'tall'], 3: ['big', '', ''], 4: ['big',
 const shapesFor = (n) => SHAPES[n] ?? Array.from({ length: n }, (_, i) => (i === 0 ? 'big' : i === n - 1 ? ['', 'full', 'wide'][(n - 3) % 3] : ''));
 const clock = (s) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')}`;
 const tile = (it, shape) => {
-  return `<button class="t ${shape}" data-open="${esc(it.id)}" aria-label="${it.k === 'video' ? 'Video' : 'Photo'}">${it.th ? `<img data-f="${esc(it.th)}" alt="">` : ''}${it.k === 'video' ? `<span class="play">${I.play}</span>${it.d ? `<span class="dur">${clock(it.d)}</span>` : ''}` : ''}</button>`;
+  const picked = S.pick?.has(it.id);
+  return `<button class="t ${shape}${S.pick ? ` pk${picked ? ' on' : ''}` : ''}" data-${S.pick ? 'toggle' : 'open'}="${esc(it.id)}" aria-label="${it.k === 'video' ? 'Video' : 'Photo'}"${S.pick ? ` aria-pressed="${!!picked}"` : ''}>${S.pick ? `<span class="pkb">${I.check}</span>` : ''}${it.th ? `<img data-f="${esc(it.th)}" alt="">` : ''}${it.k === 'video' ? `<span class="play">${I.play}</span>${it.d ? `<span class="dur">${clock(it.d)}</span>` : ''}` : ''}</button>`;
 };
 const mosaic = (items, pending) => {
   const media = items.filter((it) => it.k !== 'note');
@@ -555,11 +564,14 @@ const renderMonth = () => {
   const items = d?.items ?? [];
   const has = items.length > 0 || pending.length > 0;
   let h = `<div class="mh"><div><h2>${MN[a % 12]} <span>${Math.floor(a / 12)}</span></h2><p>Month ${i + 1}</p></div><span class="grow"></span>`;
-  if (past && (pending.length || items.some((it) => it.k !== 'note'))) h += `<button class="ib" data-pick aria-label="Add photos and video">${I.plus}</button>`;
-  if (past && items.length) h += d.shared ? `<button class="pill done" data-shared>${I.check}Shared</button>` : `<button class="pill" data-share ${S.busy ? 'disabled' : ''}>${I.share}Share</button>`;
+  if (S.pick) h += `<button class="ib" data-unpick aria-label="Cancel">${I.x}</button><button class="pill" data-send ${S.busy || !S.pick.size ? 'disabled' : ''}>${I.share}Share ${S.pick.size}</button>`;
+  else {
+    if (past && (pending.length || items.some((it) => it.k !== 'note'))) h += `<button class="ib" data-pick aria-label="Add photos and video">${I.plus}</button>`;
+    if (past && items.length) h += d.shared ? `<button class="pill done" data-shared>${I.check}Shared</button>` : `<button class="pill" data-share ${S.busy ? 'disabled' : ''}>${I.share}Share</button>`;
+  }
   h += '</div>';
   if (past) {
-    const open = S.open && items.find((it) => it.id === S.open);
+    const open = !S.pick && S.open && items.find((it) => it.id === S.open);
     if (S.live && !d) h += `<div class="mw"><div class="mo">${Array.from({ length: Math.min(S.index[ym(a)]?.n ?? 0, 6) }, (_, n) => `<div class="t ${n ? '' : 'big'}"></div>`).join('')}</div></div>`;
     else if (open) h += stage(items, open);
     else h += mosaic(items, pending);
@@ -605,7 +617,7 @@ const renderSparks = () => {
 
 const renderTop = () => {
   $('acts').innerHTML = S.live
-    ? `<button class="ib" data-share-all aria-label="Share your Spark" ${Object.keys(S.index).length ? '' : 'hidden'}>${I.share}</button><button class="ib${S.aiSeen ? ' on' : ''}" data-ai aria-label="Connect your AI" aria-expanded="${S.pop}">${I.bot}</button>`
+    ? `<button class="ib" data-share-all aria-label="Share your months">${I.share}</button><button class="ib${S.aiSeen ? ' on' : ''}" data-ai aria-label="Connect your AI" aria-expanded="${S.pop}">${I.bot}</button>`
     : `<button class="pill plain" data-start>${hello.signedIn ? 'Start' : 'Sign in'}</button>`;
   $('pop').hidden = !S.pop;
 };
@@ -698,94 +710,90 @@ const fetchBlob = async (id) => {
   if (!res?.ok) throw new Error('Couldn’t read a file. Try again.');
   return res.blob();
 };
-const cover = async (blobs, label) => {
-  const W = 1200, H = 800, G = 10;
-  const canvas = Object.assign(document.createElement('canvas'), { width: W, height: H });
-  const g = canvas.getContext('2d');
-  g.fillStyle = '#0c0a09';
-  g.fillRect(0, 0, W, H);
-  const boxes = blobs.length >= 3 ? [[0, 0, 795, H], [795 + G, 0, W - 795 - G, (H - G) / 2], [795 + G, (H + G) / 2, W - 795 - G, (H - G) / 2]] : blobs.length === 2 ? [[0, 0, (W - G) / 2, H], [(W + G) / 2, 0, (W - G) / 2, H]] : [[0, 0, W, H]];
-  for (const [i, [x, y, w, h]] of boxes.entries()) {
-    const bitmap = blobs[i] && await createImageBitmap(blobs[i]).catch(() => null);
-    if (!bitmap) {
-      const fill = g.createLinearGradient(x, y, x, y + h);
-      fill.addColorStop(0, '#ffc56b'); fill.addColorStop(0.6, '#ff7a3c'); fill.addColorStop(1, '#e8431f');
-      g.fillStyle = fill;
-      g.fillRect(x, y, w, h);
-      continue;
-    }
-    const scale = Math.max(w / bitmap.width, h / bitmap.height), sw = w / scale, sh = h / scale;
-    g.drawImage(bitmap, (bitmap.width - sw) / 2, (bitmap.height - sh) / 2, sw, sh, x, y, w, h);
-  }
-  g.font = '700 34px Figtree, system-ui, sans-serif';
-  const tw = g.measureText(label).width;
-  g.fillStyle = 'rgba(20,16,14,.6)';
-  g.beginPath(); g.roundRect(28, 28, tw + 44, 62, 31); g.fill();
-  g.fillStyle = '#fff';
-  g.textBaseline = 'middle';
-  g.fillText(label, 50, 60);
-  return toBlob(canvas, 'image/jpeg', 0.86);
-};
-const shrink = async (blob) => {
-  const bitmap = await createImageBitmap(blob).catch(() => null);
-  if (!bitmap) return blob;
-  return toBlob(draw(bitmap, bitmap.width, bitmap.height, 1600), 'image/jpeg', 0.82);
-};
-const send = async ({ title, tag, items, sparks }) => {
-  const files = [], listed = [];
-  let total = 0;
-  const add = (path, blob) => { total += blob.size; files.push({ path, blob }); };
-  const covers = [];
-  for (const [n, it] of items.entries()) {
-    if (it.k === 'note') { listed.push({ k: 'note', text: it.text }); continue; }
-    if (total > 8.5 * 1024 * 1024 || files.length > 80) break;
-    const entry = { k: it.k, ...(it.w ? { w: it.w, h: it.h } : {}), ...(it.cap ? { cap: it.cap } : {}) };
-    const picture = it.k === 'photo' ? await shrink(await fetchBlob(it.f)) : it.th ? await fetchBlob(it.th) : null;
-    if (picture) { entry.f = `${n + 1}.jpg`; add(entry.f, picture); if (covers.length < 3) covers.push(picture); }
-    if (it.k === 'video') {
-      const clip = await fetchBlob(it.f);
-      if (clip.size <= 4.5 * 1024 * 1024 && total + clip.size < 9 * 1024 * 1024) {
-        entry.v = `${n + 1}.${clip.type === 'video/webm' ? 'webm' : 'mp4'}`;
-        add(entry.v, clip);
-        if (it.d) entry.d = it.d;
-      } else if (!picture) continue;
-      else entry.k = 'photo';
-    }
-    listed.push(entry);
-  }
-  add('preview.jpg', await cover(covers, tag));
-  add('month.json', new Blob([JSON.stringify({ v: 1, title, tag, by: S.who?.username ?? null, items: listed, sparks })], { type: 'application/json' }));
-  add('index.html', new Blob([VIEWER], { type: 'text/html' }));
-  return call('post', { title, files });
-};
 const working = async (work) => {
   if (S.busy) return;
   S.busy = true;
   renderMonth();
   try { return await work(); } catch (e) { say(e); } finally { S.busy = false; renderMonth(); }
 };
-const shareMonth = () => working(async () => {
+const startShare = () => {
+  const d = doc(S.sel);
+  const media = d.items.filter((it) => it.k !== 'note');
+  if (!media.length) return sendMonth();
+  const photos = media.filter((it) => it.k === 'photo').slice(0, 4);
+  S.pick = new Set((photos.length ? photos : media.slice(0, 1)).map((it) => it.id));
+  S.open = null;
+  renderMonth();
+};
+const togglePick = (id) => {
+  const items = doc(S.sel).items, it = items.find((x) => x.id === id);
+  if (!it) return;
+  if (S.pick.has(id)) S.pick.delete(id);
+  else if (it.k === 'video') S.pick = new Set([id]);
+  else {
+    for (const other of [...S.pick]) if (items.find((x) => x.id === other)?.k === 'video') S.pick.delete(other);
+    if (S.pick.size >= 4) return toast('A post holds 4 photos, or one video.');
+    S.pick.add(id);
+  }
+  renderMonth();
+};
+const sendMonth = () => working(async () => {
   const a = S.sel, d = doc(a);
-  S.who ??= await call('viewer');
-  const made = await send({
-    title: `${S.who.name}’s ${MN[a % 12]} ${Math.floor(a / 12)}`,
-    tag: `${MN[a % 12]} ${Math.floor(a / 12)} · Month ${idxOf(a) + 1}`,
-    items: d.items.slice(0, 40),
-    sparks: S.sparks.filter((s) => s.a === a && s.done).map((s) => ({ k: s.k, t: s.t })),
-  });
+  const chosen = d.items.filter((it) => S.pick?.has(it.id));
+  const media = [];
+  for (const it of chosen) media.push(await fetchBlob(it.f));
+  const done = S.sparks.filter((s) => s.a === a && s.done).map((s) => `✓ ${s.t}`);
+  const made = await call('post', { text: [`${MN[a % 12]} ${Math.floor(a / 12)} · month ${idxOf(a) + 1} of ${TOTAL}`, ...done].join('\n'), media });
+  S.pick = null;
   d.shared = { url: made.post.url, at: Date.now() };
   saveMonth(a);
 });
+const lifePicture = async () => {
+  await document.fonts.ready;
+  const W = 1200, H = 1200, P = 70, N = 40, R = TOTAL / N, G = 5;
+  const canvas = Object.assign(document.createElement('canvas'), { width: W, height: H });
+  const g = canvas.getContext('2d');
+  g.fillStyle = '#0c0a09';
+  g.fillRect(0, 0, W, H);
+  const glow = g.createRadialGradient(140, 0, 0, 140, 0, 760);
+  glow.addColorStop(0, 'rgba(255,122,60,.3)'); glow.addColorStop(1, 'rgba(255,122,60,0)');
+  g.fillStyle = glow;
+  g.fillRect(0, 0, W, H);
+  const cur = curIdx(), left = TOTAL - (cur + 1);
+  const ember = g.createLinearGradient(0, 70, 0, 300);
+  ember.addColorStop(0, '#ffc56b'); ember.addColorStop(0.6, '#ff7a3c'); ember.addColorStop(1, '#e8431f');
+  g.textBaseline = 'alphabetic';
+  g.font = '800 250px Figtree, system-ui, sans-serif';
+  g.fillStyle = ember;
+  g.fillText(String(left), P - 12, 290);
+  const nw = g.measureText(String(left)).width;
+  g.font = '700 44px Figtree, system-ui, sans-serif';
+  g.fillStyle = '#f5f2ee';
+  g.fillText('months left', P + nw + 16, 250);
+  g.font = '500 28px Figtree, system-ui, sans-serif';
+  g.fillStyle = '#9a938b';
+  g.fillText(`${cur + 1} of ${TOTAL}`, P + nw + 18, 290);
+  const cell = (W - 2 * P - (N - 1) * G) / N, top = 370;
+  const fill = { l1: '#8f3f1d', l2: '#de6630', l3: '#ffa552' };
+  for (let i = 0; i < TOTAL; i++) {
+    const x = P + (i % N) * (cell + G), y = top + Math.floor(i / N) * (cell + G);
+    g.beginPath();
+    g.roundRect(x, y, cell, cell, 5);
+    if (i > cur) { g.strokeStyle = 'rgba(255,255,255,.16)'; g.lineWidth = 1.5; g.stroke(); continue; }
+    g.shadowColor = i === cur ? 'rgba(255,140,60,.95)' : 'transparent';
+    g.shadowBlur = i === cur ? 22 : 0;
+    g.fillStyle = i === cur ? '#fff' : fill[level(b0() + i)] ?? 'rgba(255,236,220,.17)';
+    g.fill();
+    g.shadowBlur = 0;
+  }
+  g.font = '800 34px Figtree, system-ui, sans-serif';
+  g.fillStyle = '#f5f2ee';
+  g.fillText('spark', P, top + R * (cell + G) + 58);
+  return { blob: await toBlob(canvas, 'image/png'), left, lit: Object.keys(S.index).length };
+};
 const shareAll = () => working(async () => {
-  S.who ??= await call('viewer');
-  const months = Object.entries(S.index).filter(([, v]) => v.c).sort(([x], [y]) => (x < y ? 1 : -1)).slice(0, 60).reverse();
-  if (!months.length) return toast('Add a photo to a month first.');
-  await send({
-    title: `${S.who.name}’s Spark`,
-    tag: `${Object.keys(S.index).length} month${Object.keys(S.index).length === 1 ? '' : 's'}`,
-    items: months.map(([key, v]) => ({ k: 'photo', f: v.c, cap: `${MS[fromYm(key) % 12]} ${key.slice(0, 4)}` })),
-    sparks: S.sparks.filter((s) => s.done).slice(-8).map((s) => ({ k: s.k, t: s.t })),
-  });
+  const { blob, left, lit } = await lifePicture();
+  await call('post', { text: `${left} months left.${lit ? ` ${lit} lit so far.` : ''}`, media: [blob] });
 });
 
 const addSpark = (k, t, a, from) => {
@@ -824,7 +832,10 @@ $('sp').addEventListener('click', async (e) => {
     return;
   }
   if ('del' in d) { removeItem(S.sel, d.del); return; }
-  if ('share' in d) { shareMonth(); return; }
+  if ('share' in d) { startShare(); return; }
+  if ('unpick' in d) { S.pick = null; renderMonth(); return; }
+  if ('toggle' in d) { togglePick(d.toggle); return; }
+  if ('send' in d) { sendMonth(); return; }
   if ('shared' in d) { const url = doc(S.sel)?.shared?.url; if (url) call('open', { path: new URL(url).pathname }).catch(say); return; }
   if ('shareAll' in d) { shareAll(); return; }
   if ('take' in d || 'drop' in d || 'done' in d || 'rm' in d) {
@@ -858,7 +869,8 @@ $('sp').addEventListener('click', async (e) => {
 $('sp').addEventListener('submit', async (e) => {
   e.preventDefault();
   const input = e.target.querySelector('input'), text = input.value.trim();
-  if (!text || !(await ensureLive())) return;
+  if (!text) { input.focus(); return; }
+  if (!(await ensureLive())) return;
   input.value = '';
   if ('note' in e.target.dataset) {
     const a = S.sel;
@@ -900,8 +912,20 @@ const postHeight = () => parent.postMessage({ abstractsHeight: Math.ceil(documen
 new ResizeObserver(postHeight).observe(document.body);
 
 if (hello.signedIn) {
-  try { await load(); S.who = null; } catch (e) { if (e?.code !== 'denied' && e?.code !== 'signed_out') say(e); }
+  try { await load(); } catch (e) { if (e?.code !== 'denied' && e?.code !== 'signed_out') say(e); }
 }
+let fresh = Date.now();
+const refresh = async () => {
+  if (document.hidden || !S.live || writing || S.up.length || S.busy || Date.now() - fresh < 5000 || ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) return;
+  fresh = Date.now();
+  try {
+    await load();
+    for (const a of [...S.docs.keys()]) if (a !== S.sel || !S.pick) S.docs.delete(a);
+    renderTop(); renderGrid(); count(); renderMonth(); renderSparks();
+  } catch {}
+};
+document.addEventListener('visibilitychange', refresh);
+addEventListener('focus', () => setTimeout(refresh, 300));
 renderAll(true);
 postHeight();
 </script>

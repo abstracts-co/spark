@@ -1,4 +1,3 @@
-const VIEWER = __VIEWER__;
 const MN = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const MS = MN.map((m) => m.slice(0, 3));
 const TOTAL = 960;
@@ -85,7 +84,7 @@ const hello = await (async () => {
 
 const S = {
   live: false, who: null, born: null, sparks: [], index: {}, ideas: [], aiSeen: false,
-  docs: new Map(), loading: new Set(), urls: new Map(), sel: NOWA, open: null, up: [], kind: 'adv', pop: false, busy: false,
+  docs: new Map(), loading: new Set(), urls: new Map(), sel: NOWA, open: null, pick: null, up: [], kind: 'adv', pop: false, busy: false,
   pending: hello.launch?.spark ?? null,
 };
 
@@ -102,12 +101,14 @@ const toast = (text) => {
   clearTimeout(toast.timer);
   toast.timer = setTimeout(() => host.replaceChildren(), 4500);
 };
-const WORDS = { signed_out: 'Sign in on Abstracts first.', rate_limited: 'Too many requests. Wait a minute.', needs_github: 'Sharing needs GitHub connected in Settings.', unsupported: 'This page can’t do that yet. Reload it.' };
+const WORDS = { signed_out: 'Sign in on Abstracts first.', rate_limited: 'Too many requests. Wait a minute.', unsupported: 'This page can’t do that yet. Reload it.' };
 const say = (e, where) => { if (e?.code !== 'cancelled' && e?.code !== 'denied') toast(WORDS[e?.code] ?? e?.message ?? 'Something went wrong.', where); };
 
 const chains = new Map();
+let writing = 0;
 const queue = (key, work) => {
-  const next = (chains.get(key) ?? Promise.resolve()).catch(() => {}).then(work);
+  writing++;
+  const next = (chains.get(key) ?? Promise.resolve()).catch(() => {}).then(work).finally(() => { writing--; });
   chains.set(key, next);
   return next.catch((e) => { say(e); throw e; });
 };
@@ -242,6 +243,7 @@ const select = (a) => {
   grid.children[idxOf(S.sel)]?.classList.remove('sel');
   S.sel = a;
   S.open = null;
+  S.pick = null;
   grid.children[idxOf(a)]?.classList.add('sel');
   renderMonth();
   renderAdd();
@@ -294,7 +296,8 @@ const SHAPES = { 1: ['full'], 2: ['big', 'tall'], 3: ['big', '', ''], 4: ['big',
 const shapesFor = (n) => SHAPES[n] ?? Array.from({ length: n }, (_, i) => (i === 0 ? 'big' : i === n - 1 ? ['', 'full', 'wide'][(n - 3) % 3] : ''));
 const clock = (s) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')}`;
 const tile = (it, shape) => {
-  return `<button class="t ${shape}" data-open="${esc(it.id)}" aria-label="${it.k === 'video' ? 'Video' : 'Photo'}">${it.th ? `<img data-f="${esc(it.th)}" alt="">` : ''}${it.k === 'video' ? `<span class="play">${I.play}</span>${it.d ? `<span class="dur">${clock(it.d)}</span>` : ''}` : ''}</button>`;
+  const picked = S.pick?.has(it.id);
+  return `<button class="t ${shape}${S.pick ? ` pk${picked ? ' on' : ''}` : ''}" data-${S.pick ? 'toggle' : 'open'}="${esc(it.id)}" aria-label="${it.k === 'video' ? 'Video' : 'Photo'}"${S.pick ? ` aria-pressed="${!!picked}"` : ''}>${S.pick ? `<span class="pkb">${I.check}</span>` : ''}${it.th ? `<img data-f="${esc(it.th)}" alt="">` : ''}${it.k === 'video' ? `<span class="play">${I.play}</span>${it.d ? `<span class="dur">${clock(it.d)}</span>` : ''}` : ''}</button>`;
 };
 const mosaic = (items, pending) => {
   const media = items.filter((it) => it.k !== 'note');
@@ -337,11 +340,14 @@ const renderMonth = () => {
   const items = d?.items ?? [];
   const has = items.length > 0 || pending.length > 0;
   let h = `<div class="mh"><div><h2>${MN[a % 12]} <span>${Math.floor(a / 12)}</span></h2><p>Month ${i + 1}</p></div><span class="grow"></span>`;
-  if (past && (pending.length || items.some((it) => it.k !== 'note'))) h += `<button class="ib" data-pick aria-label="Add photos and video">${I.plus}</button>`;
-  if (past && items.length) h += d.shared ? `<button class="pill done" data-shared>${I.check}Shared</button>` : `<button class="pill" data-share ${S.busy ? 'disabled' : ''}>${I.share}Share</button>`;
+  if (S.pick) h += `<button class="ib" data-unpick aria-label="Cancel">${I.x}</button><button class="pill" data-send ${S.busy || !S.pick.size ? 'disabled' : ''}>${I.share}Share ${S.pick.size}</button>`;
+  else {
+    if (past && (pending.length || items.some((it) => it.k !== 'note'))) h += `<button class="ib" data-pick aria-label="Add photos and video">${I.plus}</button>`;
+    if (past && items.length) h += d.shared ? `<button class="pill done" data-shared>${I.check}Shared</button>` : `<button class="pill" data-share ${S.busy ? 'disabled' : ''}>${I.share}Share</button>`;
+  }
   h += '</div>';
   if (past) {
-    const open = S.open && items.find((it) => it.id === S.open);
+    const open = !S.pick && S.open && items.find((it) => it.id === S.open);
     if (S.live && !d) h += `<div class="mw"><div class="mo">${Array.from({ length: Math.min(S.index[ym(a)]?.n ?? 0, 6) }, (_, n) => `<div class="t ${n ? '' : 'big'}"></div>`).join('')}</div></div>`;
     else if (open) h += stage(items, open);
     else h += mosaic(items, pending);
@@ -387,7 +393,7 @@ const renderSparks = () => {
 
 const renderTop = () => {
   $('acts').innerHTML = S.live
-    ? `<button class="ib" data-share-all aria-label="Share your Spark" ${Object.keys(S.index).length ? '' : 'hidden'}>${I.share}</button><button class="ib${S.aiSeen ? ' on' : ''}" data-ai aria-label="Connect your AI" aria-expanded="${S.pop}">${I.bot}</button>`
+    ? `<button class="ib" data-share-all aria-label="Share your months">${I.share}</button><button class="ib${S.aiSeen ? ' on' : ''}" data-ai aria-label="Connect your AI" aria-expanded="${S.pop}">${I.bot}</button>`
     : `<button class="pill plain" data-start>${hello.signedIn ? 'Start' : 'Sign in'}</button>`;
   $('pop').hidden = !S.pop;
 };
@@ -480,94 +486,90 @@ const fetchBlob = async (id) => {
   if (!res?.ok) throw new Error('Couldn’t read a file. Try again.');
   return res.blob();
 };
-const cover = async (blobs, label) => {
-  const W = 1200, H = 800, G = 10;
-  const canvas = Object.assign(document.createElement('canvas'), { width: W, height: H });
-  const g = canvas.getContext('2d');
-  g.fillStyle = '#0c0a09';
-  g.fillRect(0, 0, W, H);
-  const boxes = blobs.length >= 3 ? [[0, 0, 795, H], [795 + G, 0, W - 795 - G, (H - G) / 2], [795 + G, (H + G) / 2, W - 795 - G, (H - G) / 2]] : blobs.length === 2 ? [[0, 0, (W - G) / 2, H], [(W + G) / 2, 0, (W - G) / 2, H]] : [[0, 0, W, H]];
-  for (const [i, [x, y, w, h]] of boxes.entries()) {
-    const bitmap = blobs[i] && await createImageBitmap(blobs[i]).catch(() => null);
-    if (!bitmap) {
-      const fill = g.createLinearGradient(x, y, x, y + h);
-      fill.addColorStop(0, '#ffc56b'); fill.addColorStop(0.6, '#ff7a3c'); fill.addColorStop(1, '#e8431f');
-      g.fillStyle = fill;
-      g.fillRect(x, y, w, h);
-      continue;
-    }
-    const scale = Math.max(w / bitmap.width, h / bitmap.height), sw = w / scale, sh = h / scale;
-    g.drawImage(bitmap, (bitmap.width - sw) / 2, (bitmap.height - sh) / 2, sw, sh, x, y, w, h);
-  }
-  g.font = '700 34px Figtree, system-ui, sans-serif';
-  const tw = g.measureText(label).width;
-  g.fillStyle = 'rgba(20,16,14,.6)';
-  g.beginPath(); g.roundRect(28, 28, tw + 44, 62, 31); g.fill();
-  g.fillStyle = '#fff';
-  g.textBaseline = 'middle';
-  g.fillText(label, 50, 60);
-  return toBlob(canvas, 'image/jpeg', 0.86);
-};
-const shrink = async (blob) => {
-  const bitmap = await createImageBitmap(blob).catch(() => null);
-  if (!bitmap) return blob;
-  return toBlob(draw(bitmap, bitmap.width, bitmap.height, 1600), 'image/jpeg', 0.82);
-};
-const send = async ({ title, tag, items, sparks }) => {
-  const files = [], listed = [];
-  let total = 0;
-  const add = (path, blob) => { total += blob.size; files.push({ path, blob }); };
-  const covers = [];
-  for (const [n, it] of items.entries()) {
-    if (it.k === 'note') { listed.push({ k: 'note', text: it.text }); continue; }
-    if (total > 8.5 * 1024 * 1024 || files.length > 80) break;
-    const entry = { k: it.k, ...(it.w ? { w: it.w, h: it.h } : {}), ...(it.cap ? { cap: it.cap } : {}) };
-    const picture = it.k === 'photo' ? await shrink(await fetchBlob(it.f)) : it.th ? await fetchBlob(it.th) : null;
-    if (picture) { entry.f = `${n + 1}.jpg`; add(entry.f, picture); if (covers.length < 3) covers.push(picture); }
-    if (it.k === 'video') {
-      const clip = await fetchBlob(it.f);
-      if (clip.size <= 4.5 * 1024 * 1024 && total + clip.size < 9 * 1024 * 1024) {
-        entry.v = `${n + 1}.${clip.type === 'video/webm' ? 'webm' : 'mp4'}`;
-        add(entry.v, clip);
-        if (it.d) entry.d = it.d;
-      } else if (!picture) continue;
-      else entry.k = 'photo';
-    }
-    listed.push(entry);
-  }
-  add('preview.jpg', await cover(covers, tag));
-  add('month.json', new Blob([JSON.stringify({ v: 1, title, tag, by: S.who?.username ?? null, items: listed, sparks })], { type: 'application/json' }));
-  add('index.html', new Blob([VIEWER], { type: 'text/html' }));
-  return call('post', { title, files });
-};
 const working = async (work) => {
   if (S.busy) return;
   S.busy = true;
   renderMonth();
   try { return await work(); } catch (e) { say(e); } finally { S.busy = false; renderMonth(); }
 };
-const shareMonth = () => working(async () => {
+const startShare = () => {
+  const d = doc(S.sel);
+  const media = d.items.filter((it) => it.k !== 'note');
+  if (!media.length) return sendMonth();
+  const photos = media.filter((it) => it.k === 'photo').slice(0, 4);
+  S.pick = new Set((photos.length ? photos : media.slice(0, 1)).map((it) => it.id));
+  S.open = null;
+  renderMonth();
+};
+const togglePick = (id) => {
+  const items = doc(S.sel).items, it = items.find((x) => x.id === id);
+  if (!it) return;
+  if (S.pick.has(id)) S.pick.delete(id);
+  else if (it.k === 'video') S.pick = new Set([id]);
+  else {
+    for (const other of [...S.pick]) if (items.find((x) => x.id === other)?.k === 'video') S.pick.delete(other);
+    if (S.pick.size >= 4) return toast('A post holds 4 photos, or one video.');
+    S.pick.add(id);
+  }
+  renderMonth();
+};
+const sendMonth = () => working(async () => {
   const a = S.sel, d = doc(a);
-  S.who ??= await call('viewer');
-  const made = await send({
-    title: `${S.who.name}’s ${MN[a % 12]} ${Math.floor(a / 12)}`,
-    tag: `${MN[a % 12]} ${Math.floor(a / 12)} · Month ${idxOf(a) + 1}`,
-    items: d.items.slice(0, 40),
-    sparks: S.sparks.filter((s) => s.a === a && s.done).map((s) => ({ k: s.k, t: s.t })),
-  });
+  const chosen = d.items.filter((it) => S.pick?.has(it.id));
+  const media = [];
+  for (const it of chosen) media.push(await fetchBlob(it.f));
+  const done = S.sparks.filter((s) => s.a === a && s.done).map((s) => `✓ ${s.t}`);
+  const made = await call('post', { text: [`${MN[a % 12]} ${Math.floor(a / 12)} · month ${idxOf(a) + 1} of ${TOTAL}`, ...done].join('\n'), media });
+  S.pick = null;
   d.shared = { url: made.post.url, at: Date.now() };
   saveMonth(a);
 });
+const lifePicture = async () => {
+  await document.fonts.ready;
+  const W = 1200, H = 1200, P = 70, N = 40, R = TOTAL / N, G = 5;
+  const canvas = Object.assign(document.createElement('canvas'), { width: W, height: H });
+  const g = canvas.getContext('2d');
+  g.fillStyle = '#0c0a09';
+  g.fillRect(0, 0, W, H);
+  const glow = g.createRadialGradient(140, 0, 0, 140, 0, 760);
+  glow.addColorStop(0, 'rgba(255,122,60,.3)'); glow.addColorStop(1, 'rgba(255,122,60,0)');
+  g.fillStyle = glow;
+  g.fillRect(0, 0, W, H);
+  const cur = curIdx(), left = TOTAL - (cur + 1);
+  const ember = g.createLinearGradient(0, 70, 0, 300);
+  ember.addColorStop(0, '#ffc56b'); ember.addColorStop(0.6, '#ff7a3c'); ember.addColorStop(1, '#e8431f');
+  g.textBaseline = 'alphabetic';
+  g.font = '800 250px Figtree, system-ui, sans-serif';
+  g.fillStyle = ember;
+  g.fillText(String(left), P - 12, 290);
+  const nw = g.measureText(String(left)).width;
+  g.font = '700 44px Figtree, system-ui, sans-serif';
+  g.fillStyle = '#f5f2ee';
+  g.fillText('months left', P + nw + 16, 250);
+  g.font = '500 28px Figtree, system-ui, sans-serif';
+  g.fillStyle = '#9a938b';
+  g.fillText(`${cur + 1} of ${TOTAL}`, P + nw + 18, 290);
+  const cell = (W - 2 * P - (N - 1) * G) / N, top = 370;
+  const fill = { l1: '#8f3f1d', l2: '#de6630', l3: '#ffa552' };
+  for (let i = 0; i < TOTAL; i++) {
+    const x = P + (i % N) * (cell + G), y = top + Math.floor(i / N) * (cell + G);
+    g.beginPath();
+    g.roundRect(x, y, cell, cell, 5);
+    if (i > cur) { g.strokeStyle = 'rgba(255,255,255,.16)'; g.lineWidth = 1.5; g.stroke(); continue; }
+    g.shadowColor = i === cur ? 'rgba(255,140,60,.95)' : 'transparent';
+    g.shadowBlur = i === cur ? 22 : 0;
+    g.fillStyle = i === cur ? '#fff' : fill[level(b0() + i)] ?? 'rgba(255,236,220,.17)';
+    g.fill();
+    g.shadowBlur = 0;
+  }
+  g.font = '800 34px Figtree, system-ui, sans-serif';
+  g.fillStyle = '#f5f2ee';
+  g.fillText('spark', P, top + R * (cell + G) + 58);
+  return { blob: await toBlob(canvas, 'image/png'), left, lit: Object.keys(S.index).length };
+};
 const shareAll = () => working(async () => {
-  S.who ??= await call('viewer');
-  const months = Object.entries(S.index).filter(([, v]) => v.c).sort(([x], [y]) => (x < y ? 1 : -1)).slice(0, 60).reverse();
-  if (!months.length) return toast('Add a photo to a month first.');
-  await send({
-    title: `${S.who.name}’s Spark`,
-    tag: `${Object.keys(S.index).length} month${Object.keys(S.index).length === 1 ? '' : 's'}`,
-    items: months.map(([key, v]) => ({ k: 'photo', f: v.c, cap: `${MS[fromYm(key) % 12]} ${key.slice(0, 4)}` })),
-    sparks: S.sparks.filter((s) => s.done).slice(-8).map((s) => ({ k: s.k, t: s.t })),
-  });
+  const { blob, left, lit } = await lifePicture();
+  await call('post', { text: `${left} months left.${lit ? ` ${lit} lit so far.` : ''}`, media: [blob] });
 });
 
 const addSpark = (k, t, a, from) => {
@@ -606,7 +608,10 @@ $('sp').addEventListener('click', async (e) => {
     return;
   }
   if ('del' in d) { removeItem(S.sel, d.del); return; }
-  if ('share' in d) { shareMonth(); return; }
+  if ('share' in d) { startShare(); return; }
+  if ('unpick' in d) { S.pick = null; renderMonth(); return; }
+  if ('toggle' in d) { togglePick(d.toggle); return; }
+  if ('send' in d) { sendMonth(); return; }
   if ('shared' in d) { const url = doc(S.sel)?.shared?.url; if (url) call('open', { path: new URL(url).pathname }).catch(say); return; }
   if ('shareAll' in d) { shareAll(); return; }
   if ('take' in d || 'drop' in d || 'done' in d || 'rm' in d) {
@@ -640,7 +645,8 @@ $('sp').addEventListener('click', async (e) => {
 $('sp').addEventListener('submit', async (e) => {
   e.preventDefault();
   const input = e.target.querySelector('input'), text = input.value.trim();
-  if (!text || !(await ensureLive())) return;
+  if (!text) { input.focus(); return; }
+  if (!(await ensureLive())) return;
   input.value = '';
   if ('note' in e.target.dataset) {
     const a = S.sel;
@@ -682,7 +688,19 @@ const postHeight = () => parent.postMessage({ abstractsHeight: Math.ceil(documen
 new ResizeObserver(postHeight).observe(document.body);
 
 if (hello.signedIn) {
-  try { await load(); S.who = null; } catch (e) { if (e?.code !== 'denied' && e?.code !== 'signed_out') say(e); }
+  try { await load(); } catch (e) { if (e?.code !== 'denied' && e?.code !== 'signed_out') say(e); }
 }
+let fresh = Date.now();
+const refresh = async () => {
+  if (document.hidden || !S.live || writing || S.up.length || S.busy || Date.now() - fresh < 5000 || ['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) return;
+  fresh = Date.now();
+  try {
+    await load();
+    for (const a of [...S.docs.keys()]) if (a !== S.sel || !S.pick) S.docs.delete(a);
+    renderTop(); renderGrid(); count(); renderMonth(); renderSparks();
+  } catch {}
+};
+document.addEventListener('visibilitychange', refresh);
+addEventListener('focus', () => setTimeout(refresh, 300));
 renderAll(true);
 postHeight();
