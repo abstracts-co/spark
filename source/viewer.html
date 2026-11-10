@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Spark</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@400..800&display=swap">
+<style>
+html,body{margin:0;background:transparent}
+.v{max-width:760px;margin:0 auto;--fg:#f5f2ee;--mut:#9a938b;--well:rgba(255,255,255,.065);--well2:rgba(255,255,255,.12);--e1:#ffc56b;--e2:#ff7a3c;--adv:#ff8a4c;--bkt:#f5c451;--con:#5fd4a6;--out:cubic-bezier(.23,1,.32,1);
+  background:#0c0a09;color:var(--fg);padding:14px;border-radius:22px;font-family:Figtree,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;font-size:15px;line-height:1.35;-webkit-font-smoothing:antialiased}
+.v *{box-sizing:border-box;margin:0}
+.v button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;text-align:inherit;transition:transform .16s var(--out)}
+.v button:active{transform:scale(.96)}
+.v svg,.v img,.v video{display:block}
+.ico{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.h{display:flex;align-items:center;gap:8px;margin:0 2px 12px;font-weight:800;font-size:18px;letter-spacing:-.02em}
+.h svg{width:20px;height:20px}
+.h span{margin-left:auto;font-size:13px;font-weight:600;color:var(--mut);font-variant-numeric:tabular-nums}
+.mw{container-type:inline-size}
+.mo{display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:calc((100cqw - 12px)/3);gap:6px;grid-auto-flow:dense}
+.t{position:relative;border-radius:12px;overflow:hidden;background:#1a1614;width:100%;height:100%;display:block}
+.t img{width:100%;height:100%;object-fit:cover}
+.t.big{grid-column:span 2;grid-row:span 2;border-radius:16px}
+.t.wide{grid-column:span 2}
+.t.tall{grid-row:span 2}
+.t.full{grid-column:span 3}
+.cap{position:absolute;left:6px;bottom:6px;padding:2px 8px;border-radius:999px;background:rgba(20,16,14,.6);font-size:11.5px;font-weight:650}
+.play{position:absolute;left:50%;top:50%;width:40px;height:40px;margin:-20px;border-radius:50%;background:rgba(20,16,14,.5);display:grid;place-items:center;pointer-events:none}
+.play svg{width:14px;height:14px;fill:#fff;margin-left:2px}
+.note{margin-top:6px;border-radius:12px;background:linear-gradient(160deg,#2a1c14,#1c1410);padding:11px 14px;font-weight:500;color:#ffe9d6;white-space:pre-wrap;overflow-wrap:anywhere;box-shadow:inset 0 0 0 1px rgba(255,160,90,.14)}
+.stage{position:relative;border-radius:16px;overflow:hidden;background:#000;aspect-ratio:var(--ar,1);max-height:min(125cqw,720px);display:grid;place-items:center}
+.stage img,.stage video{width:100%;height:100%;object-fit:contain}
+.stage button{position:absolute;right:10px;top:10px;width:36px;height:36px;border-radius:50%;background:rgba(20,16,14,.6);display:grid;place-items:center}
+.sparks{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.sparks button{display:flex;align-items:center;gap:7px;padding:6px 8px 6px 12px;border-radius:999px;background:var(--well);font-size:13.5px;font-weight:550;overflow-wrap:anywhere}
+.sparks i{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--well2);color:var(--k);flex:none}
+.adv{--k:var(--adv)}.bkt{--k:var(--bkt)}.con{--k:var(--con)}
+</style>
+<body>
+<div class="v" id="v"></div>
+<script type="module">
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+const safe = (name) => (typeof name === 'string' && /^[0-9]{1,3}\.(jpg|mp4|webm)$/.test(name) ? name : null);
+const KINDS = ['adv', 'bkt', 'con'];
+const SHAPES = { 1: ['full'], 2: ['big', 'tall'], 3: ['big', '', ''], 4: ['big', 'tall', 'wide', ''], 5: ['big', '', '', 'wide', ''] };
+const shapesFor = (n) => SHAPES[n] ?? Array.from({ length: n }, (_, i) => (i === 0 ? 'big' : i === n - 1 ? ['', 'full', 'wide'][(n - 3) % 3] : ''));
+const PLUS = '<svg class="ico" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>';
+const X = '<svg class="ico" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+const LOGO = '<svg viewBox="0 0 24 24"><defs><linearGradient id="eg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffc56b"/><stop offset=".6" stop-color="#ff7a3c"/><stop offset="1" stop-color="#e8431f"/></linearGradient></defs><path fill="url(#eg)" d="M12 1c.7 5.6 2.9 8.8 10 11-7.1 2.2-9.3 5.4-10 11-.7-5.6-2.9-8.800-10-11C9.1 9.8 11.3 6.6 12 1z"/></svg>';
+const v = document.getElementById('v');
+const data = await fetch('month.json').then((r) => r.json()).catch(() => null);
+const items = (Array.isArray(data?.items) ? data.items : []).filter((it) => it && (it.k === 'note' ? typeof it.text === 'string' : safe(it.f)));
+const sparks = (Array.isArray(data?.sparks) ? data.sparks : []).filter((s) => s && typeof s.t === 'string').slice(0, 12);
+let open = -1;
+const render = () => {
+  const it = items[open];
+  const shapes = shapesFor(items.filter((x) => x.k !== 'note').length);
+  let n = 0;
+  const body = it
+    ? `<div class="stage" style="--ar:${it.w && it.h ? `${+it.w}/${+it.h}` : '1'}">${it.k === 'video' && safe(it.v) ? `<video src="${safe(it.v)}" poster="${safe(it.f)}" controls playsinline autoplay></video>` : `<img src="${safe(it.f)}" alt="">`}<button data-close aria-label="Close">${X}</button></div>`
+    : `<div class="mo">${items.map((x, i) => (x.k === 'note'
+      ? ''
+      : `<button class="t ${shapes[n++] ?? ''}" data-open="${i}" aria-label="Open"><img src="${safe(x.f)}" alt="" loading="lazy">${x.k === 'video' && safe(x.v) ? '<span class="play"><svg viewBox="0 0 16 16"><path d="M3 1.500v13l11-6.500z"/></svg></span>' : ''}${typeof x.cap === 'string' ? `<span class="cap">${esc(x.cap.slice(0, 20))}</span>` : ''}</button>`)).join('')}</div>`;
+  const notes = items.filter((x) => x.k === 'note').map((x) => `<p class="note">${esc(x.text.slice(0, 400))}</p>`).join('');
+  v.innerHTML = `<div class="h">${LOGO}spark<span>${esc(String(data?.tag ?? '').slice(0, 60))}</span></div><div class="mw">${body}</div>${notes}
+    ${sparks.length ? `<div class="sparks">${sparks.map((s, i) => `<button class="${KINDS.includes(s.k) ? s.k : 'bkt'}" data-spark="${i}">${esc(s.t.slice(0, 120))}<i>${PLUS}</i></button>`).join('')}</div>` : ''}`;
+};
+v.addEventListener('click', (e) => {
+  const t = e.target.closest('button');
+  if (!t) return;
+  if ('open' in t.dataset) open = +t.dataset.open;
+  else if ('close' in t.dataset) open = -1;
+  else if ('spark' in t.dataset) {
+    const s = sparks[+t.dataset.spark];
+    parent.postMessage({ abstracts: 'call', id: 'open', method: 'open', params: { path: `/a/spark?a_spark=${encodeURIComponent(`${KINDS.includes(s.k) ? s.k : 'bkt'}:${s.t.slice(0, 120)}`)}` } }, '*');
+    return;
+  }
+  render();
+});
+render();
+const postHeight = () => parent.postMessage({ abstractsHeight: Math.ceil(document.body.getBoundingClientRect().height) }, '*');
+new ResizeObserver(postHeight).observe(document.body);
+postHeight();
+</script>
+</body>
+</html>

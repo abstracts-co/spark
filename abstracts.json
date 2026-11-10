@@ -2,7 +2,17 @@
   "schemaVersion": 1,
   "name": "a/spark",
   "description": "A life is about 960 months. See how many you have left, keep a private scrapbook for each one, and share the sparks that make them count.",
-  "rules": [],
+  "rules": [
+    "Share only your own months, photos and video.",
+    "Don't post photos of people who wouldn't want them public.",
+    "Be kind about how other people spend their months."
+  ],
   "roles": [],
-  "categories": []
+  "categories": [],
+  "aboutArtifact": "spark",
+  "pinnedArtifacts": [
+    "spark"
+  ],
+  "avatar": "assets/logo.png",
+  "cover": "assets/banner.png"
 }

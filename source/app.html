@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Spark</title>
+<style>__CSS__</style>
+<body>
+<div class="sp" id="sp">
+  <header class="top">
+    <div class="brand">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="eg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffc56b"/><stop offset=".6" stop-color="#ff7a3c"/><stop offset="1" stop-color="#e8431f"/></linearGradient></defs><path fill="url(#eg)" d="M12 1c.7 5.6 2.9 8.8 10 11-7.1 2.2-9.3 5.4-10 11-.7-5.6-2.9-8.800-10-11C9.1 9.8 11.3 6.6 12 1z"/></svg>
+      spark
+    </div>
+    <span class="grow"></span>
+    <div id="acts" style="display:flex;gap:8px"></div>
+  </header>
+  <div class="pop" id="pop" hidden>
+    <textarea id="prompt" readonly aria-label="A prompt for your AI"></textarea>
+    <div><button data-copy>Copy</button><a href="https://abstracts.co/agents#polls" target="_blank" rel="noopener">Set up</a></div>
+  </div>
+
+  <div class="hero">
+    <div class="num" id="num">960</div>
+    <div class="sub">months left<span id="of"></span></div>
+    <label class="born" id="born">Born
+      <select id="bm" aria-label="Birth month"></select><select id="by" aria-label="Birth year"></select>
+    </label>
+  </div>
+
+  <div class="gw" id="gw">
+    <div class="ages" id="ages"></div>
+    <div class="grid" id="grid" tabindex="0" role="application" aria-label="Your 960 months"></div>
+    <div class="tip" id="tip"></div>
+  </div>
+
+  <div id="says" role="status"></div>
+  <div class="cols">
+    <section class="card" id="month" hidden></section>
+    <section class="card" id="sparks" hidden></section>
+  </div>
+</div>
+<script type="module">__JS__</script>
+</body>
+</html>
